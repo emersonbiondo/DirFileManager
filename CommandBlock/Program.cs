@@ -1,4 +1,5 @@
-﻿using Microsoft.Extensions.Configuration;
+﻿using CommandBlock;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
@@ -41,9 +42,25 @@ serviceCollection.AddLogging(loggingBuilder => {
 
 var serviceProvider = serviceCollection.BuildServiceProvider();
 
-var logger = serviceProvider.GetService<ILoggerFactory>().CreateLogger<Program>();
+var loggerFactory = serviceProvider.GetService<ILoggerFactory>();
 
-logger.LogInformation("Starting...");
+if (loggerFactory != null)
+{
+    var logger = loggerFactory.CreateLogger<Program>();
 
-logger.LogInformation("Finishing Successfully");
+    logger.LogInformation("Starting...");
+
+    var service = new Service(loggerFactory);
+
+    var itemCommands = configuration.GetSection("ItemCommands").Get<List<ItemCommand>>();
+
+    await service.Execute(itemCommands != null ? itemCommands : new List<ItemCommand>());
+
+    logger.LogInformation("Finishing Successfully");
+}
+else
+{
+    throw new Exception("Error Create Logger");
+}
+
 
