@@ -1,5 +1,6 @@
 ﻿using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
+using System.IO.Compression;
 
 namespace CommandBlock
 {
@@ -37,6 +38,9 @@ namespace CommandBlock
                         case "FileCompress":
                             await FileCompressExecute(itemCommand);
                             break;
+                        case "FileUncompress":
+                            await FileUncompressExecute(itemCommand);
+                            break;
                         case "DirectoryDelete":
                             await DirectoryDeleteExecute(itemCommand);
                             break;
@@ -66,6 +70,7 @@ namespace CommandBlock
         {
             var result = false;
 
+            File.Delete($@"{itemCommand.Parameter1}");
 
             await Task.Delay(itemCommand.Delay);
 
@@ -78,6 +83,7 @@ namespace CommandBlock
         {
             var result = false;
 
+            File.Copy($@"{itemCommand.Parameter1}", $@"{itemCommand.Parameter2}");
 
             await Task.Delay(itemCommand.Delay);
 
@@ -90,6 +96,7 @@ namespace CommandBlock
         {
             var result = false;
 
+            File.Move($@"{itemCommand.Parameter1}", $@"{itemCommand.Parameter2}");
 
             await Task.Delay(itemCommand.Delay);
 
@@ -102,6 +109,40 @@ namespace CommandBlock
         {
             var result = false;
 
+            var compressionLevel = CompressionLevel.Fastest;
+
+            switch (itemCommand.Parameter3)
+            {
+                case "Optimal":
+                    compressionLevel = CompressionLevel.Optimal;
+                    break;
+                case "NoCompression":
+                    compressionLevel = CompressionLevel.NoCompression;
+                    break;
+                case "SmallestSize":
+                    compressionLevel = CompressionLevel.SmallestSize;
+                    break;
+                default:
+                    break;
+            }
+
+            using (var archive = ZipFile.Open(itemCommand.Parameter2, ZipArchiveMode.Create))
+            {
+                archive.CreateEntryFromFile(itemCommand.Parameter1, Path.GetFileName(itemCommand.Parameter1), compressionLevel);
+            }
+
+            await Task.Delay(itemCommand.Delay);
+
+            logger.LogInformation("ItemCommand {0}, SQL Command run successfully", itemCommand.OrderId);
+
+            logger.LogInformation("ItemCommand {0}, result: {1}", itemCommand.OrderId, result);
+        }
+
+        public async Task FileUncompressExecute(ItemCommand itemCommand)
+        {
+            var result = false;
+
+            ZipFile.ExtractToDirectory(itemCommand.Parameter1, itemCommand.Parameter2, true);
 
             await Task.Delay(itemCommand.Delay);
 
@@ -114,6 +155,7 @@ namespace CommandBlock
         {
             var result = false;
 
+            UtilDirectory.Delete(itemCommand.Parameter1);
 
             await Task.Delay(itemCommand.Delay);
 
@@ -126,6 +168,7 @@ namespace CommandBlock
         {
             var result = false;
 
+            UtilDirectory.Copy(itemCommand.Parameter1, itemCommand.Parameter2, true);
 
             await Task.Delay(itemCommand.Delay);
 
@@ -137,6 +180,8 @@ namespace CommandBlock
         {
             var result = false;
 
+            UtilDirectory.Copy(itemCommand.Parameter1, itemCommand.Parameter2, true);
+            UtilDirectory.Delete(itemCommand.Parameter1);
 
             await Task.Delay(itemCommand.Delay);
 
@@ -148,6 +193,24 @@ namespace CommandBlock
         {
             var result = false;
 
+            var compressionLevel = CompressionLevel.Fastest;
+
+            switch (itemCommand.Parameter3)
+            {
+                case "Optimal":
+                    compressionLevel = CompressionLevel.Optimal;
+                    break;
+                case "NoCompression":
+                    compressionLevel = CompressionLevel.NoCompression;
+                    break;
+                case "SmallestSize":
+                    compressionLevel = CompressionLevel.SmallestSize;
+                    break;
+                default:
+                    break;
+            }
+
+            ZipFile.CreateFromDirectory(itemCommand.Parameter1, itemCommand.Parameter2, compressionLevel, false);
 
             await Task.Delay(itemCommand.Delay);
 

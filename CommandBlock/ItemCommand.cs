@@ -12,6 +12,8 @@ namespace CommandBlock
 
         public string Parameter2 { get; set; }
 
+        public string Parameter3 { get; set; }
+
         public ItemCommand()
         {
             OrderId = 0;
@@ -19,6 +21,7 @@ namespace CommandBlock
             Delay = 1;
             Parameter1 = string.Empty;
             Parameter2 = string.Empty;
+            Parameter3 = string.Empty;
         }
     }
 }
